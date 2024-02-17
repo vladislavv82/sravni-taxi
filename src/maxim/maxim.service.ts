@@ -3,32 +3,28 @@ import { chromium } from 'playwright';
 
 @Injectable()
 export class MaximService {
-  constructor() {}
+constructor() {}
 
-  async getPrice(from: string, to: string): Promise<any>  {
-    const browser = await chromium.launch();
-    const page = await browser.newPage();
+async getPrice(from: string, to: string): Promise<any> {
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
 
-    try {
+  try {
     await page.goto('https://rostov-na-donu1.taximaxim.ru/zakazi-taksi-onlajn');
 
     const frame = page.frame({ name: 'order-form-frame' });
 
-    // Заполнение поля "Откуда" 
     await frame.fill('input[placeholder="Откуда"]', from);
     await page.frameLocator('iframe[name="order-form-frame"]').getByPlaceholder('Откуда').press('ArrowDown');
     await page.frameLocator('iframe[name="order-form-frame"]').getByPlaceholder('Откуда').press('Enter');
     await page.waitForTimeout(1000);
 
-    // Заполнение поля "Куда"
     await frame.fill('input[placeholder="Куда"]', to);
     await frame.press('input[data-place-id="0"][data-quick-id="0"]', 'ArrowDown');
     await frame.press('input[data-place-id="0"][data-quick-id="0"]', 'Enter');
 
-    // Ждем 1 секунду перед тем как получить цену
     await page.waitForTimeout(3000);
 
-    // Получаем текст из элемента span#price
     const econPrice = await frame.textContent('span#price');
     await page.waitForTimeout(1000);
 
@@ -45,10 +41,9 @@ export class MaximService {
 
   } catch (error) {
     console.error('Ошибка при получении цены:', error);
-    return 'Ошибка при получении цены';
+    return { error: 'Ошибка при получении цены' };
   } finally {
     await browser.close();
   }
-
-  }
+}
 }
